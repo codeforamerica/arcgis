@@ -19,5 +19,25 @@ module ArcGIS
       @connection.get(path).body
     end
 
+    def recursive_services(folder_path,&block)
+      r = folder_index(folder_path*"/")
+
+      r["services"].each do |service|
+        yield folder_path,service["name"],service["type"]
+      end
+
+      r["folders"].each do |sub_folder|
+        recursive_services(folder_path+[sub_folder],&block)
+      end
+    end
+
+    def each_service(&block)
+      Enumerator.new do |y|
+        recursive_services([]) do |folder_path,name,type|
+          y.yield(folder_path,name,type)
+        end
+      end.each(&block)
+    end
+
   end
 end
