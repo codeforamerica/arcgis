@@ -12,7 +12,11 @@ module ArcGIS
     end
 
     def index
-      @connection.get("").body
+      folder_index("")
+    end
+
+    def folder_index(path)
+      @connection.get(path).body
     end
 
   end
