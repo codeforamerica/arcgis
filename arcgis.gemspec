@@ -7,6 +7,11 @@ Gem::Specification.new do |gem|
   gem.add_development_dependency 'rspec', '~> 2.6'
   gem.add_development_dependency 'simplecov', '~> 0.4'
   gem.add_development_dependency 'yard', '~> 0.7'
+
+  gem.add_runtime_dependency 'faraday', '~> 0.7.4'
+  gem.add_runtime_dependency 'faraday_middleware', '~> 0.7.0'
+  gem.add_runtime_dependency 'multi_json', '~> 1.0.3'
+
   gem.author      = "Code for America"
   gem.description = %q{TODO: Write a gem description}
   gem.email       = 'info@codeforamerica.org'
