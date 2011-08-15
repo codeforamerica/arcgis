@@ -1,5 +1,7 @@
+require "faraday"
+require 'faraday_middleware'
+
 module ArcGIS
-  # Your code goes here...
   class Downloader
 
     def initialize(url)
