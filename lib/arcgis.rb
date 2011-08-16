@@ -44,8 +44,8 @@ module ArcGIS
     end
 
     #only for MapServer services
-    def each_layer(name,&block)
-      service_index(name,"MapServer")["layers"].each(&block)
+    def each_layer(service_name,&block)
+      service_index(service_name,"MapServer")["layers"].each(&block)
     end
 
   end
