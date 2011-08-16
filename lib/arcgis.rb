@@ -2,7 +2,7 @@ require "faraday"
 require 'faraday_middleware'
 
 module ArcGIS
-  DEFAULT_MAX_RESULTS = 500
+  DEFAULT_RESULTS_PER_PAGE = 500
 
   class Downloader
 
@@ -11,7 +11,7 @@ module ArcGIS
         conn.use Faraday::Response::ParseJson
         conn.adapter(Faraday.default_adapter)
       end
-      @max_results = DEFAULT_MAX_RESULTS
+      @results_per_page = DEFAULT_RESULTS_PER_PAGE
     end
 
     def index
@@ -59,7 +59,7 @@ module ArcGIS
       get_page = Proc.new do |page|
         @connection.get do |req|
           req.url(path)
-          req.params["where"] = "(OBJECTID>=#{page*@max_results}) AND (OBJECTID<#{(1+page)*@max_results})"
+          req.params["where"] = "(OBJECTID>=#{page*@results_per_page}) AND (OBJECTID<#{(1+page)*@results_per_page})"
           req.params["returnGeometry"] = true
         end.body
       end
@@ -79,9 +79,9 @@ module ArcGIS
         features = get_page[current_page]["features"]
         all_features += features
 
-        if features.length < @max_results #we less than max results. we could be done, or we could be in a gap.
+        if features.length < @results_per_page #we less than max results. we could be done, or we could be in a gap.
           #get everything above this page, see if we're really done.
-          above_us = @connection.get {|r| r.url(path); r.params["where"] = "OBJECTID>=#{(current_page+1)*@max_results}"}.body
+          above_us = @connection.get {|r| r.url(path); r.params["where"] = "OBJECTID>=#{(current_page+1)*@results_per_page}"}.body
           above_features = above_us["features"]
           break if (above_features.nil? or above_features.empty?) #if there's no features above us, we're done. break the loop.
         end
