@@ -39,5 +39,14 @@ module ArcGIS
       end.each(&block)
     end
 
+    def service_index(name,type)
+      @connection.get([name,type]*"/").body
+    end
+
+    #only for MapServer services
+    def each_layer(name,&block)
+      service_index(name,"MapServer")["layers"].each(&block)
+    end
+
   end
 end
