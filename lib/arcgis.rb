@@ -2,6 +2,8 @@ require "faraday"
 require 'faraday_middleware'
 
 module ArcGIS
+  DEFAULT_MAX_RESULTS = 500
+
   class Downloader
 
     def initialize(url)
@@ -9,6 +11,7 @@ module ArcGIS
         conn.use Faraday::Response::ParseJson
         conn.adapter(Faraday.default_adapter)
       end
+      @max_results = DEFAULT_MAX_RESULTS
     end
 
     def index
@@ -46,6 +49,10 @@ module ArcGIS
     #only for MapServer services
     def each_layer(service_name,&block)
       service_index(service_name,"MapServer")["layers"].each(&block)
+    end
+
+    #downloads a MapServer layer, respecting the rate limit
+    def download_layer(service_name,id)
     end
 
   end
