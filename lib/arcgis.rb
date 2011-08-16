@@ -52,7 +52,43 @@ module ArcGIS
     end
 
     #downloads a MapServer layer, respecting the rate limit
+    #it's a bit hacky. it depends on OBJECTID being present, to 'scroll' through.
     def download_layer(service_name,id)
+      path = [service_name,"MapServer",id,"query"]*"/"
+
+      get_page = Proc.new do |page|
+        @connection.get do |req|
+          req.url(path)
+          req.params["where"] = "(OBJECTID>=#{page*@max_results}) AND (OBJECTID<#{(1+page)*@max_results})"
+          req.params["returnGeometry"] = true
+        end.body
+      end
+
+      current_page = 0
+      initial_results = get_page[current_page]
+
+      features = initial_results.delete("features") #initial_results now has just the headers
+      all_features = features
+
+      #while we're still getting results, download the next page.
+      #there could be gaps, so we have to keep going until we know we've hit the top OID.
+      #this requires a messy loop/break, unless I can figure out something cleaner.
+      #WARNING: slow for large data sets. TODO: make parallel
+      loop do
+        current_page+=1
+        features = get_page[current_page]["features"]
+        all_features += features
+
+        if features.length < @max_results #we less than max results. we could be done, or we could be in a gap.
+          #get everything above this page, see if we're really done.
+          above_us = @connection.get {|r| r.url(path); r.params["where"] = "OBJECTID>=#{(current_page+1)*@max_results}"}.body
+          above_features = above_us["features"]
+          break if (above_features.nil? or above_features.empty?) #if there's no features above us, we're done. break the loop.
+        end
+      end
+
+      #we've downloaded all the features. return the result. initial_results has the header.
+      return initial_results.merge("features"=>all_features)
     end
 
   end
